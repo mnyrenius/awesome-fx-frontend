@@ -14,6 +14,7 @@ import 'typeface-roboto'
 import MenuIcon from '@material-ui/icons/Menu'
 import SaveIcon from '@material-ui/icons/Save'
 import DoneIcon from '@material-ui/icons/Done'
+import CachedIcon from '@material-ui/icons/Cached';
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 
 const drawerWidth = 240
@@ -96,6 +97,12 @@ export default function Menubar(props) {
             style={{marginLeft: 'auto'}}
           >
             <SaveIcon />
+          </IconButton>
+          <IconButton
+            color="inherit"
+            onClick={props.handleReload}
+          >
+            <CachedIcon />
           </IconButton>
           <IconButton
             color="inherit"

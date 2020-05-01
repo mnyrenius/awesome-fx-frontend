@@ -3,23 +3,15 @@ import Menubar from './Components/Menubar'
 import Preset from './Components/Preset'
 import { v4 as uuidv4 } from 'uuid'
 
-const test = {
+const empty = {
   name: "Awesome FX 1",
   effects: {
-    0: { name: "Delay", parameters: {
-      0: { name: "Time", value: 10 },
-      1: { name: "Feedback", value: 20 },
-    }},
-    1: { name: "Reverb", parameters: {
-      0: { name: "Size", value: 10 },
-      1: { name: "Mix", value: 20 },
-    }}
   }
 }
 
 
 export default function App() {
-  const [currentPreset, setPreset] = useState(test)
+  const [currentPreset, setPreset] = useState(empty)
   const [open, setOpen] = useState(false)
   const [allEffects, setAllEffects] = useState([])
 
@@ -31,6 +23,24 @@ export default function App() {
       })
       .catch(console.log)
   }, [])
+
+  useEffect(() => {
+    fetch('http://' + window.location.hostname + ':5396/config')
+      .then(res => res.json())
+      .then((data) => {
+        const preset = {name: "Awesome FX 1", effects: {}}
+        data.forEach(fx => {
+          const avail = allEffects.find(el => el.name === fx.name)
+          const params = fx.parameters.map((val, index) => {
+            return {name: avail.parameters[index], value: val}
+          })
+          preset.effects[uuidv4()] = {name: fx.name, parameters: params}
+        }
+        )
+        setPreset(preset)
+      })
+      .catch(console.log)
+  }, [allEffects])
 
   const handleListItemClick = value => {
     const params = value.parameters.map(param => {
@@ -60,6 +70,28 @@ export default function App() {
       updated.effects[fxId].parameters[paramName].value = value
       return updated
     })
+
+    const list = Object.entries(currentPreset.effects).map(([k, v], i) => {
+      return k
+    })
+
+    const index = list.findIndex(el => el === fxId)
+
+    const params = Object.entries(currentPreset.effects[fxId].parameters).map(([k, v], i) => {
+      return v["value"]
+    })
+
+    fetch('http://' + window.location.hostname + ':5396/config/' + index, {
+      method: 'PUT',
+      mode: 'cors',
+      headers: {
+        'Content-type': 'application/json'
+      },
+      body: JSON.stringify(params)
+    })
+      .then(response => {
+      })
+      .catch(console.log)
   }
 
   const handleApplyPreset = () => {
@@ -80,11 +112,26 @@ export default function App() {
       .catch(console.log)
   }
 
+  const handleReload = () => {
+    fetch('http://' + window.location.hostname + ':5396/reload', {
+      method: 'POST',
+      mode: 'cors',
+      headers: {
+        'Content-type': 'application/json'
+      },
+      body: {}
+    })
+      .then(response => {
+      })
+      .catch(console.log)
+  }
+
   return (
     <React.Fragment>
       <Menubar
         title={currentPreset.name}
         handleApply={handleApplyPreset}
+        handleReload={handleReload}
       />
       <Preset
         currentPreset={currentPreset}

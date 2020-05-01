@@ -48,6 +48,9 @@ function Effect({fx, handleDelete, handleChangeSlider}) {
                   <Grid item xs={6}>
                     <Slider
                       value={param.value}
+                      min={0}
+                      max={1}
+                      step={0.01}
                       valueLabelDisplay="auto"
                       onChange={(e, value) => {
                         clearTimeout(sliderTimeoutId)
