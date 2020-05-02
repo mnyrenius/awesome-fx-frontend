@@ -38,7 +38,7 @@ function Effect({fx, handleDelete, handleChangeSlider}) {
           </ExpansionPanelSummary>
           <ExpansionPanelDetails>
             <Grid container spacing={1}>
-              {Object.entries(fx.parameters).map(([k, param], index) => (
+              {fx.parameters.map((param, index) => (
                 <React.Fragment key={param.name}>
                   <Grid item xs={6}>
                     <Typography variant="body1" gutterBottom>
@@ -55,7 +55,7 @@ function Effect({fx, handleDelete, handleChangeSlider}) {
                       onChange={(e, value) => {
                         clearTimeout(sliderTimeoutId)
                         sliderTimeoutId = setTimeout(() => {
-                          handleChangeSlider(k, value)
+                          handleChangeSlider(index, value)
                         }, 5)
                       }}
                     />
@@ -71,12 +71,12 @@ function Effect({fx, handleDelete, handleChangeSlider}) {
 export default function Preset(props) {
   return (
     <React.Fragment>
-      {Object.entries(props.currentPreset.effects).map(([k, fx], index) => (
+      {props.currentPreset.effects.map((fx, index) => (
         <Effect
           fx={fx}
-          handleDelete={props.handleDeleteEffect(k)}
-          handleChangeSlider={props.handleChangeSlider(k)}
-          key={k}
+          handleDelete={props.handleDeleteEffect(index)}
+          handleChangeSlider={props.handleChangeSlider(index)}
+          key={index}
         />
      ))}
       <IconButton

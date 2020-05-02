@@ -95,18 +95,21 @@ export default function Menubar(props) {
           <IconButton
             color="inherit"
             style={{marginLeft: 'auto'}}
+            disabled={true}
           >
             <SaveIcon />
           </IconButton>
           <IconButton
             color="inherit"
             onClick={props.handleReload}
+            disabled={!props.connected}
           >
             <CachedIcon />
           </IconButton>
           <IconButton
             color="inherit"
             onClick={props.handleApply}
+            disabled={!props.connected}
           >
             <DoneIcon />
           </IconButton>

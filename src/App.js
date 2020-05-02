@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react'
 import Menubar from './Components/Menubar'
 import Preset from './Components/Preset'
-import { v4 as uuidv4 } from 'uuid'
 
-const empty = {
+const initial =
+  {
   name: "Awesome FX 1",
-  effects: {
-  }
+  effects: [
+  ]
 }
 
-
 export default function App() {
-  const [currentPreset, setPreset] = useState(empty)
+  const [currentPreset, setPreset] = useState(initial)
   const [open, setOpen] = useState(false)
   const [allEffects, setAllEffects] = useState([])
+  const [connected, setConnected] = useState(false)
 
   useEffect(() => {
     fetch('http://' + window.location.hostname + ':5396/plugins')
@@ -28,13 +28,14 @@ export default function App() {
     fetch('http://' + window.location.hostname + ':5396/config')
       .then(res => res.json())
       .then((data) => {
-        const preset = {name: "Awesome FX 1", effects: {}}
+        setConnected(true)
+        const preset = {name: "Awesome FX 1", effects: []}
         data.forEach(fx => {
           const avail = allEffects.find(el => el.name === fx.name)
           const params = fx.parameters.map((val, index) => {
             return {name: avail.parameters[index], value: val}
           })
-          preset.effects[uuidv4()] = {name: fx.name, parameters: params}
+          preset.effects = [...preset.effects, {name: fx.name, parameters: params}]
         }
         )
         setPreset(preset)
@@ -48,9 +49,8 @@ export default function App() {
     })
 
     setPreset(prev => {
-      const id = uuidv4()
       const updated = {...prev}
-      updated.effects[id] = {name: value.name, parameters: params}
+      updated.effects = [...updated.effects, {name: value.name, parameters: params}]
       return updated
     })
     setOpen(false)
@@ -59,29 +59,23 @@ export default function App() {
   const handleDeleteEffect = id => () => {
     setPreset(prev => {
       const updated = {...prev}
-      delete updated.effects[id]
+      updated.effects = prev.effects.filter((v, index) => index !== id)
       return updated
     })
   }
 
-  const handleChangeSlider = fxId => (paramName, value) => {
+  const handleChangeSlider = fxId => (paramId, value) => {
     setPreset(prev => {
       const updated = {...prev}
-      updated.effects[fxId].parameters[paramName].value = value
+      updated.effects[fxId].parameters[paramId].value = value
       return updated
     })
 
-    const list = Object.entries(currentPreset.effects).map(([k, v], i) => {
-      return k
+    const params = currentPreset.effects[fxId].parameters.map(param => {
+      return param.value
     })
 
-    const index = list.findIndex(el => el === fxId)
-
-    const params = Object.entries(currentPreset.effects[fxId].parameters).map(([k, v], i) => {
-      return v["value"]
-    })
-
-    fetch('http://' + window.location.hostname + ':5396/config/' + index, {
+    fetch('http://' + window.location.hostname + ':5396/config/' + fxId, {
       method: 'PUT',
       mode: 'cors',
       headers: {
@@ -95,8 +89,8 @@ export default function App() {
   }
 
   const handleApplyPreset = () => {
-    const config = Object.entries(currentPreset.effects).map(([k, v], i) => {
-      return {name: v.name, parameters: Object.entries(v.parameters).map(([pk, pv], pi) => pv["value"])}
+    const config = currentPreset.effects.map(fx => {
+      return {name: fx.name, parameters: fx.parameters.map(param => param.value)}
     })
 
     fetch('http://' + window.location.hostname + ':5396/config', {
@@ -132,6 +126,7 @@ export default function App() {
         title={currentPreset.name}
         handleApply={handleApplyPreset}
         handleReload={handleReload}
+        connected={connected}
       />
       <Preset
         currentPreset={currentPreset}
