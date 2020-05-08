@@ -9,7 +9,9 @@ import {
   ListItem,
   ListItemText,
   Divider,
-  CssBaseline} from '@material-ui/core'
+  CssBaseline,
+  Switch,
+  FormControlLabel} from '@material-ui/core'
 import 'typeface-roboto'
 import MenuIcon from '@material-ui/icons/Menu'
 import SaveIcon from '@material-ui/icons/Save'
@@ -72,7 +74,14 @@ export default function Menubar(props) {
             <ListItemText primary={text} />
           </ListItem>
         ))}
+        <ListItem>
+          <FormControlLabel
+            control={<Switch size="small" checked={props.settings["mono-input"]} onChange={props.toggleMonoInput} />}
+            label="Mono input"
+          />
+        </ListItem>
       </List>
+
     </div>
   )
 

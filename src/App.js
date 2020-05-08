@@ -9,17 +9,29 @@ const initial =
   ]
 }
 
+const initialGlobalSettings = {
+  "mono-input": false
+}
+
 export default function App() {
   const [currentPreset, setPreset] = useState(initial)
   const [open, setOpen] = useState(false)
   const [allEffects, setAllEffects] = useState([])
   const [connected, setConnected] = useState(false)
+  const [globalSettings, setGlobalSettings] = useState(initialGlobalSettings)
 
   useEffect(() => {
     fetch('http://' + window.location.hostname + ':5396/plugins')
       .then(res => res.json())
       .then((data) => {
         setAllEffects(data)
+      })
+      .catch(console.log)
+
+    fetch('http://' + window.location.hostname + ':5396/globalsettings')
+      .then(res => res.json())
+      .then((data) => {
+        setGlobalSettings(data)
       })
       .catch(console.log)
   }, [])
@@ -42,6 +54,20 @@ export default function App() {
       })
       .catch(console.log)
   }, [allEffects])
+
+  useEffect(() => {
+    fetch('http://' + window.location.hostname + ':5396/globalsettings', {
+      method: 'PUT',
+      mode: 'cors',
+      headers: {
+        'Content-type': 'application/json'
+      },
+      body: JSON.stringify(globalSettings)
+    })
+      .then(response => {
+      })
+      .catch(console.log)
+  }, [globalSettings])
 
   const handleListItemClick = value => {
     const params = value.parameters.map(param => {
@@ -120,6 +146,14 @@ export default function App() {
       .catch(console.log)
   }
 
+  const toggleMonoInput = () => {
+    setGlobalSettings(prev => {
+      const updated = {...prev}
+      updated["mono-input"] = !prev["mono-input"]
+      return updated
+    })
+  }
+
   return (
     <React.Fragment>
       <Menubar
@@ -127,6 +161,8 @@ export default function App() {
         handleApply={handleApplyPreset}
         handleReload={handleReload}
         connected={connected}
+        settings={globalSettings}
+        toggleMonoInput={toggleMonoInput}
       />
       <Preset
         currentPreset={currentPreset}
